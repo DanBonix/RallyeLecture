@@ -5,7 +5,7 @@
 Il s'agit de la situation initiale du ppe. Comportant d'une part le site web rallyeLecture ainsi que la librairie de gestion des droits d'accès.
 
 #### 1. Mettez en place la base de données rallye lecture
-![schéma bd rallye](./sql/schemaDbRallyeLecture.PNG)
+![schéma bd rallye](./schemaDbRallyeLecture.PNG)
 
 #### 2. Tables liées à la gestion des autorisations.
 ![schéma bd aauth](./sql/schemaDbAauth.PNG)
