@@ -9,15 +9,48 @@ class Livre extends CI_Controller {
 
     function __construct() {
         parent::__construct();
+        $config['upload_path'] = './img/';
+        $config['allowed_types'] = 'gif|jpg|png|jpeg';
+        $config['overwrite'] = TRUE;
+        $config['max_size'] = '2000';
+        $config['max_width'] = '1024';
+        $config['max_height'] = '768';
+        
         $this->load->model('livreModel');
         $this->load->model('auteurModel');
         $this->load->model('editeurModel');
         $this->load->model('quizzModel');
+        
+        $this->load->library('pagination');
+        $this->load->library('upload', $config);
     }
 
     function index() {
-        $data['livres']=$this->livreModel->get_all_livres();
+        $config['base_url'] = site_url().'/Livre/index/page';
+        $page = $this->uri->segment(4,0);
+        $config['total_rows'] = $this->livreModel->get_count();
+        $config['per_page'] = 10;
+        $config['uri_segment'] = 4;
+        $config['num_links'] = 10;
+        $config['full_tag_open'] = '<b>';
+        $config['full_tag_close'] = '</b>';
+        $config['num_tag_open'] = ' ';
+        $config['num_tag_close'] = ' ';
+        $config['first_link'] = 'Première page ';
+        $config['last_link'] = ' Dernière page';
+        $config['prev_link'] = 'Précédent';
+        $config['next_link'] = 'Suivant';
+        
+        $this->pagination->initialize($config);
+        
+        $data['livres']=$this->livreModel->get_all_livres($page,$config['per_page']);
+        $links = $this->pagination->create_links();
+        
         $data['title']='Les Livres';
+        $data['count'] = $this->livreModel->get_count();
+        $data['links'] = $links;
+        $data['recherche'] = $this->input->post('recherche');
+        
         $this->load->view('AppHeader',$data);
         $this->load->view('LivreIndex',$data);
         $this->load->view('AppFooter',$data);
@@ -26,10 +59,15 @@ class Livre extends CI_Controller {
     function add() {
         $this->load->library('form_validation');
         LoadValidationRules($this->livreModel,$this->form_validation);
-        if ($this->form_validation->run()) {
+       
+        if ($this->form_validation->run())
+        {
+            $this->upload_image();
+            
             $params=array(
                 'titre'=>$this->input->post('titre'),
-                'couverture'=>$this->input->post('couverture'),
+                //'couverture'=>$this->input->post('couverture'),
+                'couverture'=>$this->upload->file_name,
                 'idAuteur'=>$this->input->post('idAuteur'),
                 'idEditeur'=>$this->input->post('idEditeur'),
                 'idQuizz'=>$this->input->post('idQuizz'),
@@ -38,7 +76,8 @@ class Livre extends CI_Controller {
             $livre_id=$this->livreModel->add_livre($params);
             redirect('Livre/Index');
         }
-        else {
+        else
+        {
             $all_auteurs=$this->auteurModel->get_all_auteurs();
             $all_editeurs=$this->editeurModel->get_all_editeurs();
             $all_quizz=$this->quizzModel->get_all_quizz();
@@ -93,7 +132,8 @@ class Livre extends CI_Controller {
         if (isset($livre['id'])) {
             $this->load->library('form_validation');
             LoadValidationRules($this->livreModel,$this->form_validation);
-            if ($this->form_validation->run()) {
+            if ($this->form_validation->run())
+            {
                 $params=array(
                     'titre'=>$this->input->post('titre'),
                     'couverture'=>$this->input->post('couverture'),
@@ -105,7 +145,8 @@ class Livre extends CI_Controller {
                 $this->livreModel->update_livre($id,$params);
                 redirect('Livre/Index');
             }
-            else {
+            else
+            {
                 $data['livre']=$livre;
                 $all_auteurs=$this->auteurModel->get_all_auteurs();
                 $all_editeurs=$this->editeurModel->get_all_editeurs();
@@ -156,17 +197,44 @@ class Livre extends CI_Controller {
             }
         }
         else
+        {
             show_error("Le livre que vous tentez de modifier n'existe pas.");
+        }
     }
 
     function remove($id) {
         $livre=$this->livreModel->get_livre($id);
-        if (isset($livre['id'])) {
+        if (isset($livre['id']))
+        {
             $this->livreModel->delete_livre($id);
             redirect('livre/index');
         }
+        
         else
+        {
             show_error("Le livre que vous tentez de supprimer n'existe pas.");
+        }
+    }
+    
+    function count()
+    {
+        $this->livreModel->get_count();
+    }
+    
+    function upload_image()
+    {
+        if(!$this->upload->do_upload('couverture'))
+        {
+            //$error = TRUE;
+            $error = $this->upload->display_errors();
+        }
+        
+        else
+        {
+            $error = FALSE;
+        }
+        
+        return $error;
     }
 
 }
