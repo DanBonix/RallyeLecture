@@ -703,7 +703,7 @@ class Aauth {
 			// if verification activated
 			if($this->config_vars['verification'] && !$this->is_admin($user_id)){
 				$data = null;
-				$data['banned'] = 1;
+				$data['banned'] = 0;
 
 				$this->aauth_db->where('id', $user_id);
 				$this->aauth_db->update($this->config_vars['users'], $data);
