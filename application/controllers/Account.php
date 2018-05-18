@@ -3,7 +3,7 @@
 /**
  * Description of Account
  *
- * @author vjallon
+ * @author DanBonix
  */
 class Account extends CI_Controller
 {
@@ -25,8 +25,8 @@ class Account extends CI_Controller
         // todo : vérifier si bon emplacement des  from_validation (P7)
         LoadValidationRules($this->enseignantModel, $this->form_validation);
         $this->form_validation->set_rules('password','Password','required|max_length[100]');
-        $this->form_validation->set_rules('passwordConfirmation','Confirmez le mot de passe',"required|max_length[100]|callback_password_check");
-        $this->form_validation->set_rules('g-recaptcha-response','Captcha','callback_recaptcha_check');
+        $this->form_validation->set_rules('confirm','Confirmez le mot de passe',"required|max_length[100]|callback_password_check");
+        //$this->form_validation->set_rules('g-recaptcha-response','Captcha','callback_recaptcha_check');
 
         if ($this->form_validation->run())
         {
@@ -44,12 +44,12 @@ class Account extends CI_Controller
             $enseignant_id=$this->enseignantModel->add_enseignant($params);
             // on l'affecte au groupe Enseignant
             $this->aauth->add_member($idAauthUser,'Enseignant');
-            // redirect('Enseignant/Index');
+            //redirect('Enseignant/Index');
             $this->attente_confirmation($email);
         }
         else
         {
-            $data['title']='Inscription au rallye lecture';
+            $data['title']='Inscription au Rallye Lecture';
             $this->load->view('AppHeader',$data);
             $this->load->view('AccountCreate');
             $this->load->view('AppFooter');
@@ -60,10 +60,10 @@ class Account extends CI_Controller
     public function password_check()
     {
         $password = $this->input->post('password');
-        $passwordConfirmation = $this->input->post('passwordConfirmation');
+        $passwordConfirmation = $this->input->post('confirm');
         if($password != $passwordConfirmation)
         {
-            $this->form_validation->set_message('password_check','le mot de passe de confirmation est différent du mot de passe initial');
+            $this->form_validation->set_message('password_check','Attention ! Les deux mots de passe doivent être identiques');
             return false;
         }
         else
@@ -92,7 +92,7 @@ class Account extends CI_Controller
         $data['title'] = "Confirmation de votre inscription";
         $data['login'] = $email;
         $this->load->view('AppHeader',$data);
-        $this->load->view('AccountConfirmation',$data);
+        $this->load->view('AccountCreate',$data);
         $this->load->view('AppFooter');
     }
     
